@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Offline Routing Utility</string>
+
+    <string name="buttonRoute">Explore Route</string>
+    <string name="title_activity_tabbed_main">TabbedActivityMain</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+</resources>
