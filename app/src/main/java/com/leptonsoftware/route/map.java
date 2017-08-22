@@ -87,7 +87,7 @@ public class map extends Fragment{
     private GeoPoint start;
     private GeoPoint end;
     private PathLayer pathLayer;
-
+    private volatile boolean shortestPathRunning = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -124,13 +124,13 @@ public class map extends Fragment{
         mapView.map().setMapPosition(28.632027, 77.218793, 1 << 2000);
 
         //setContentView(mapView);
-
-        start=new GeoPoint(28.632027, 77.218793);
+//TEMPORARY COMMENT
+       /* start=new GeoPoint(28.632027, 77.218793);
         end=new GeoPoint(28.629896, 77.214192);
         itemizedLayer.addItem(createMarkerItem(start, R.drawable.marker_icon_green));
         mapView.map().updateMap(true);
         itemizedLayer.addItem(createMarkerItem(end, R.drawable.marker_icon_red));
-        mapView.map().updateMap(true);
+        mapView.map().updateMap(true);*/
 
 
         new GHAsyncTask<Void, Void, Path>() {
@@ -153,8 +153,8 @@ public class map extends Fragment{
                 //finishPrepare();
             }
         }.execute();
-
-        new AsyncTask<Void, Void, PathWrapper>() {
+//     TEMPORARY COMMENT
+     /*   new AsyncTask<Void, Void, PathWrapper>() {
             float time;
 
             protected PathWrapper doInBackground(Void... v) {
@@ -171,12 +171,12 @@ public class map extends Fragment{
 
             protected void onPostExecute(PathWrapper resp) {
                 if (!resp.hasErrors()) {
-                    /*log("from:" + fromLat + "," + fromLon + " to:" + toLat + ","
+                    *//*log("from:" + fromLat + "," + fromLon + " to:" + toLat + ","
                             + toLon + " found path with distance:" + resp.getDistance()
                             / 1000f + ", nodes:" + resp.getPoints().getSize() + ", time:"
                             + time + " " + resp.getDebugInfo());
                     logUser("the route is " + (int) (resp.getDistance() / 100) / 10f
-                            + "km long, time:" + resp.getTime() / 60000f + "min, debug:" + time);*/
+                            + "km long, time:" + resp.getTime() / 60000f + "min, debug:" + time);*//*
 
                     pathLayer = createPathLayer(resp);
                     mapView.map().layers().add(pathLayer);
@@ -188,7 +188,7 @@ public class map extends Fragment{
                 }
 
             }
-        }.execute();
+        }.execute();*/
 
 
 
@@ -237,12 +237,89 @@ public class map extends Fragment{
 
         @Override
         public boolean onGesture(Gesture g, MotionEvent e) {
-           /* if (g instanceof Gesture.LongPress) {
+            if (g instanceof Gesture.Tap) {
                 GeoPoint p = mMap.viewport().fromScreenPoint(e.getX(), e.getY());
                 return onLongPress(p);
-            }*/
+            }
+
+
             return false;
         }
+    }
+
+   /* boolean isReady() {
+        // only return true if already loaded
+        if (hopper != null)
+            return true;
+
+        if (prepareInProgress) {
+            logUser("Preparation still in progress");
+            return false;
+        }
+        logUser("Prepare finished but hopper not ready. This happens when there was an error while loading the files");
+        return false;
+    }*/
+    protected boolean onLongPress(GeoPoint p) {
+       /* if (!isReady())
+            return false;*/
+
+        if (shortestPathRunning) {
+            //logUser("Calculation still in progress");
+            return false;
+        }
+
+        if (start != null && end == null) {
+            end = p;
+            shortestPathRunning = true;
+            itemizedLayer.addItem(createMarkerItem(p, R.drawable.marker_icon_red));
+            mapView.map().updateMap(true);
+
+            calcPath(start.getLatitude(), start.getLongitude(), end.getLatitude(),
+                    end.getLongitude());
+        } else {
+            start = p;
+            end = null;
+            // remove routing layers
+            mapView.map().layers().remove(pathLayer);
+            itemizedLayer.removeAllItems();
+
+            itemizedLayer.addItem(createMarkerItem(start, R.drawable.marker_icon_green));
+            mapView.map().updateMap(true);
+        }
+        return true;
+    }
+
+
+    public void calcPath(final double fromLat, final double fromLon,
+                         final double toLat, final double toLon) {
+
+       // log("calculating path ...");
+        new AsyncTask<Void, Void, PathWrapper>() {
+            float time;
+
+            protected PathWrapper doInBackground(Void... v) {
+                StopWatch sw = new StopWatch().start();
+                GHRequest req = new GHRequest(fromLat, fromLon, toLat, toLon).
+                        setAlgorithm(Algorithms.DIJKSTRA_BI);
+                req.getHints().
+                        put(Routing.INSTRUCTIONS, "false");
+                GHResponse resp = hopper.route(req);
+                time = sw.stop().getSeconds();
+                return resp.getBest();
+            }
+
+            protected void onPostExecute(PathWrapper resp) {
+                if (!resp.hasErrors()) {
+                    //Toast.makeText(this,"Nikhil Routing Done",Toast.LENGTH_SHORT).show();
+                    pathLayer = createPathLayer(resp);
+                    mapView.map().layers().add(pathLayer);
+                    mapView.map().updateMap(true);
+                } else {
+                   // Toast.makeText("Nikhil Routing Err!",Toast.LENGTH_SHORT).show();
+                }
+                shortestPathRunning = false;
+            }
+        }.execute();
     }
 
 }
