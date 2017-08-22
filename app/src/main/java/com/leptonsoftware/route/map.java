@@ -86,7 +86,7 @@ public class map extends Fragment{
     private ItemizedLayer<MarkerItem> itemizedLayer;
     private GeoPoint start;
     private GeoPoint end;
-    private PathLayer pathLayer;
+    private PathLayer pathLayer; 
 
 
     @Override
