@@ -1,5 +1,7 @@
 package com.leptonsoftware.route;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -26,8 +28,11 @@ import com.graphhopper.util.Helper;
 import com.graphhopper.util.Parameters.Algorithms;
 import com.graphhopper.util.Parameters.Routing;
 import com.graphhopper.util.PointList;
+import com.graphhopper.search.Geocoding;
 import com.graphhopper.util.ProgressListener;
 import com.graphhopper.util.StopWatch;
+import com.graphhopper.util.shapes.GHPlace;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +40,8 @@ import java.util.Collections;
 import org.oscim.android.MapView;
 import org.oscim.android.canvas.AndroidGraphics;
 import org.oscim.backend.canvas.Bitmap;
+import org.oscim.core.BoundingBox;
+import org.oscim.core.Box;
 import org.oscim.core.GeoPoint;
 import org.oscim.core.MapPosition;
 import org.oscim.core.Tile;
@@ -50,6 +57,8 @@ import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.layers.vector.PathLayer;
 import org.oscim.layers.vector.geometries.Style;
+import org.oscim.map.ViewController;
+import org.oscim.map.Viewport;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.source.mapfile.MapFileTileSource;
 import android.app.Activity;
@@ -88,11 +97,13 @@ public class map extends Fragment{
     private GeoPoint end;
     private PathLayer pathLayer;
     private volatile boolean shortestPathRunning = false;
-
+    private boolean doubleBackToExitPressedOnce = false;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.map, container, false);
+
+
 
         mapsFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 "/graphhopper/maps/");
@@ -195,12 +206,11 @@ public class map extends Fragment{
         return rootView;
     }
 
-
     private PathLayer createPathLayer(PathWrapper response) {
         Style style = Style.builder()
                 .fixed(true)
                 .generalization(Style.GENERALIZATION_SMALL)
-                .strokeColor(0x9900cc33)
+                .strokeColor(Color.RED)
                 .strokeWidth(4 * getResources().getDisplayMetrics().density)
                 .build();
         PathLayer pathLayer = new PathLayer(mapView.map(), style);
@@ -247,18 +257,16 @@ public class map extends Fragment{
         }
     }
 
-   /* boolean isReady() {
-        // only return true if already loaded
-        if (hopper != null)
-            return true;
 
-        if (prepareInProgress) {
-            logUser("Preparation still in progress");
-            return false;
-        }
-        logUser("Prepare finished but hopper not ready. This happens when there was an error while loading the files");
-        return false;
-    }*/
+abstract class geocode implements Geocoding{
+
+    public List<GHPlace> names2places(GHPlace... var1)
+    {
+
+        return null;
+    }
+}
+
     protected boolean onLongPress(GeoPoint p) {
        /* if (!isReady())
             return false;*/
@@ -302,7 +310,7 @@ public class map extends Fragment{
                 GHRequest req = new GHRequest(fromLat, fromLon, toLat, toLon).
                         setAlgorithm(Algorithms.DIJKSTRA_BI);
                 req.getHints().
-                        put(Routing.INSTRUCTIONS, "false");
+                        put(Routing.INSTRUCTIONS, "true");
                 GHResponse resp = hopper.route(req);
                 time = sw.stop().getSeconds();
                 return resp.getBest();
@@ -314,12 +322,21 @@ public class map extends Fragment{
                     pathLayer = createPathLayer(resp);
                     mapView.map().layers().add(pathLayer);
                     mapView.map().updateMap(true);
+                   /* Viewport mapPosition =mapView.map().viewport();
+                    mapPosition.setMaxX(77.12);
+                    mapPosition.setMaxY(30.44);
+                    mapPosition.setMinX(76.47);
+                    mapPosition.setMinY(28.38);*/
                 } else {
                    // Toast.makeText("Nikhil Routing Err!",Toast.LENGTH_SHORT).show();
                 }
                 shortestPathRunning = false;
             }
         }.execute();
+
+
+
     }
+
 
 }

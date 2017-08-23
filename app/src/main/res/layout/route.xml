@@ -22,9 +22,9 @@
         android:inputType="textPersonName"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="11dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="15dp" />
+        android:layout_below="@+id/section_label"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="77dp" />
 
     <EditText
         android:id="@+id/editText2"
@@ -36,18 +36,21 @@
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="54dp"
         android:layout_below="@+id/editText"
-        android:layout_alignStart="@+id/editText"
-        android:layout_marginTop="13dp" />
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp" />
 
     <Button
         android:id="@+id/button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/buttonRoute"
-        tools:layout_editor_absoluteX="138dp"
-        tools:layout_editor_absoluteY="111dp"
-        android:layout_marginTop="13dp"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/editText2"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginTop="15dp"
+        android:background="@color/colorPrimary"
+        android:text="@string/buttonRoute"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:layout_editor_absoluteX="138dp"
+        tools:layout_editor_absoluteY="111dp" />
 
 </RelativeLayout>

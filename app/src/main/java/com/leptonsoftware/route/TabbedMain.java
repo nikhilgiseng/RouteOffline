@@ -1,6 +1,7 @@
 package com.leptonsoftware.route;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,7 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class TabbedMain extends AppCompatActivity {
-
+    boolean doubleBackToExitPressedOnce = false;
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -36,7 +38,7 @@ public class TabbedMain extends AppCompatActivity {
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    private ViewPager mViewPager;
+    private CustomViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,43 +52,74 @@ public class TabbedMain extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (CustomViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
+        mViewPager.setPagingEnabled(false);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-    @Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        int position = tab.getPosition();
-        Toast.makeText(TabbedMain.this,Integer.toString(position),Toast.LENGTH_SHORT).show();
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int position = tab.getPosition();
+                //Toast.makeText(TabbedMain.this,Integer.toString(position),Toast.LENGTH_SHORT).show();
+                if(position==1 ||position==2)
+                {
+                    mViewPager.setPagingEnabled(true);
+                }
 
+                if(position==0)
+                {
+                    mViewPager.setPagingEnabled(false);
 
-    }
+                }
+            }
 
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
 
-    @Override
-    public void onTabUnselected(TabLayout.Tab tab) {
+            }
 
-    }
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
 
-    @Override
-    public void onTabReselected(TabLayout.Tab tab) {
-
-    }
-});
+            }
+        });
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-
-                Intent intentLogin = new Intent(TabbedMain.this,MainActivity.class);
-                startActivity(intentLogin);
             }
         });
 
+    }
+
+
+    @Override
+    public void onBackPressed()
+    {
+
+        if (doubleBackToExitPressedOnce) {
+           /* super.onBackPressed();
+            return;*/
+
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 
 
@@ -140,7 +173,7 @@ tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.map, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_tabbed_main, container, false);
             TextView textView = (TextView) rootView.findViewById(R.id.section_label);
             textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;

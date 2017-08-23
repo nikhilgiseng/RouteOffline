@@ -251,6 +251,8 @@ public class MainActivity extends AppCompatActivity {
         mapView.onPause();
     }
 
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
