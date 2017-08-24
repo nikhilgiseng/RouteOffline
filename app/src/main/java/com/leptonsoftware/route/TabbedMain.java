@@ -23,7 +23,18 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.graphhopper.GraphHopper;
+
+import org.oscim.android.MapView;
+import org.oscim.layers.marker.ItemizedLayer;
+import org.oscim.layers.marker.MarkerItem;
+import org.oscim.layers.vector.PathLayer;
+
 public class TabbedMain extends AppCompatActivity {
+    public static GraphHopper hopper;
+    public static  MapView mapView;
+    public static ItemizedLayer<MarkerItem> itemizedLayer;
+    public static PathLayer pathLayer;
     boolean doubleBackToExitPressedOnce = false;
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide

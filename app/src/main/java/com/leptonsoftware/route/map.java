@@ -84,18 +84,19 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import static com.leptonsoftware.route.TabbedMain.mapView;
+
 /**
  * Created by Hp on 22-Aug-17.
  */
 
 public class map extends Fragment{
-    private GraphHopper hopper;
-    private MapView mapView;
+
+
     private File mapsFolder;
-    private ItemizedLayer<MarkerItem> itemizedLayer;
     private GeoPoint start;
     private GeoPoint end;
-    private PathLayer pathLayer;
     private volatile boolean shortestPathRunning = false;
     private boolean doubleBackToExitPressedOnce = false;
     @Override
@@ -113,7 +114,7 @@ public class map extends Fragment{
         mapView=(MapView)rootView.findViewById(R.id.map);    //IMPORTANT UNIQUE DECLARATION FOR VIEWS
         //mapView=new MapView(map.this);
 
-        this.mapView.setClickable(true);
+        mapView.setClickable(true);
         mapView.map().layers().add(new map.MapEventsReceiver(mapView.map()));
 
         MapFileTileSource tileSource = new MapFileTileSource();
@@ -126,12 +127,12 @@ public class map extends Fragment{
         mapView.map().layers().add(new LabelLayer(mapView.map(), l));
         mapView.map().updateMap(true);
         // Markers layer
-        itemizedLayer = new ItemizedLayer<>(mapView.map(), (MarkerSymbol) null);
-        mapView.map().layers().add(itemizedLayer);
+        TabbedMain.itemizedLayer = new ItemizedLayer<>(mapView.map(), (MarkerSymbol) null);
+        mapView.map().layers().add(TabbedMain.itemizedLayer);
 
         // Map position
         GeoPoint mapCenter = tileSource.getMapInfo().boundingBox.getCenterPoint();
-        //mapView.map().setMapPosition(mapCenter.getLatitude(), mapCenter.getLongitude(), 1 << 15);
+        //TabbedMain.mapView.map().setMapPosition(mapCenter.getLatitude(), mapCenter.getLongitude(), 1 << 15);
         mapView.map().setMapPosition(28.632027, 77.218793, 1 << 2000);
 
         //setContentView(mapView);
@@ -149,7 +150,7 @@ public class map extends Fragment{
                 GraphHopper tmpHopp = new GraphHopper().forMobile();
                 tmpHopp.load(new File(mapsFolder, "north-america_us_new-york").getAbsolutePath() + "-gh");
                 // log("found graph " + tmpHopp.getGraphHopperStorage().toString() + ", nodes:" + tmpHopp.getGraphHopperStorage().getNodes());
-                hopper = tmpHopp;
+                TabbedMain.hopper = tmpHopp;
                 return null;
             }
 
@@ -213,7 +214,7 @@ public class map extends Fragment{
                 .strokeColor(Color.RED)
                 .strokeWidth(4 * getResources().getDisplayMetrics().density)
                 .build();
-        PathLayer pathLayer = new PathLayer(mapView.map(), style);
+        PathLayer pathLayer = new PathLayer(TabbedMain.mapView.map(), style);
         List<GeoPoint> geoPoints = new ArrayList<>();
         PointList pointList = response.getPoints();
 
@@ -279,7 +280,7 @@ abstract class geocode implements Geocoding{
         if (start != null && end == null) {
             end = p;
             shortestPathRunning = true;
-            itemizedLayer.addItem(createMarkerItem(p, R.drawable.marker_icon_red));
+            TabbedMain.itemizedLayer.addItem(createMarkerItem(p, R.drawable.marker_icon_red));
             mapView.map().updateMap(true);
 
             calcPath(start.getLatitude(), start.getLongitude(), end.getLatitude(),
@@ -288,10 +289,10 @@ abstract class geocode implements Geocoding{
             start = p;
             end = null;
             // remove routing layers
-            mapView.map().layers().remove(pathLayer);
-            itemizedLayer.removeAllItems();
+            mapView.map().layers().remove(TabbedMain.pathLayer);
+            TabbedMain.itemizedLayer.removeAllItems();
 
-            itemizedLayer.addItem(createMarkerItem(start, R.drawable.marker_icon_green));
+            TabbedMain.itemizedLayer.addItem(createMarkerItem(start, R.drawable.marker_icon_green));
             mapView.map().updateMap(true);
         }
         return true;
@@ -311,7 +312,7 @@ abstract class geocode implements Geocoding{
                         setAlgorithm(Algorithms.DIJKSTRA_BI);
                 req.getHints().
                         put(Routing.INSTRUCTIONS, "true");
-                GHResponse resp = hopper.route(req);
+                GHResponse resp = TabbedMain.hopper.route(req);
                 time = sw.stop().getSeconds();
                 return resp.getBest();
             }
@@ -319,8 +320,8 @@ abstract class geocode implements Geocoding{
             protected void onPostExecute(PathWrapper resp) {
                 if (!resp.hasErrors()) {
                     //Toast.makeText(this,"Nikhil Routing Done",Toast.LENGTH_SHORT).show();
-                    pathLayer = createPathLayer(resp);
-                    mapView.map().layers().add(pathLayer);
+                    TabbedMain.pathLayer = createPathLayer(resp);
+                    mapView.map().layers().add(TabbedMain.pathLayer);
                     mapView.map().updateMap(true);
                    /* Viewport mapPosition =mapView.map().viewport();
                     mapPosition.setMaxX(77.12);
