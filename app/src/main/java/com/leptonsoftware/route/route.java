@@ -176,7 +176,7 @@ public class route extends Fragment{
                                        put(Parameters.Routing.INSTRUCTIONS, "true");
                                GHResponse resp = TabbedMain.hopper.route(req);
                                time = sw.stop().getSeconds();
-                               return resp.getBest();
+                               return resp.getBest(); 
                            }
 
                            protected void onPostExecute(PathWrapper resp) {
